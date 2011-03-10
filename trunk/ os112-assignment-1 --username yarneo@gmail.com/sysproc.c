@@ -34,6 +34,15 @@ sys_wait2(void)
 }
 
 int
+sys_nice(void)
+{ 
+  int wt = 0;
+  int rt = 0;
+  return wait2(&wt, &rt);
+
+}
+
+int
 sys_kill(void)
 {
   int pid;

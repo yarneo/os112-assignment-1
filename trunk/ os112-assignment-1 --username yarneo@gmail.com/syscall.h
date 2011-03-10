@@ -21,3 +21,4 @@
 #define SYS_sleep  20
 #define SYS_uptime 21
 #define SYS_wait2  22
+#define SYS_nice   23
