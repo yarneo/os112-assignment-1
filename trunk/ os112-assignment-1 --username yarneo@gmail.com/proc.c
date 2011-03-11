@@ -528,3 +528,10 @@ kill(int pid)
   return -1;
 }
 
+int
+nice()
+{
+  acquire(&ptable.lock);
+  proc->priority = !(proc->priority);
+  release(&ptable.lock);	
+}
