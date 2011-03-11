@@ -36,7 +36,7 @@ sys_wait2(void)
 int
 sys_nice(void)
 { 
-  return nice()
+  return nice();
 
 }
 
