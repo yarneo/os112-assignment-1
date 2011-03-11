@@ -360,8 +360,15 @@ scheduler(void)
   struct proc *p;
 #ifdef RR2
   int loop = 0;
+  proc* lowPriorityRunnable;
+#elif FAIR2Q
+  proc* min_low_pri;
+  proc* min_high_pri;
+  int mechane;
+  int ratio;
+  int smallHighRatio = -1;
+  int smallLowRatio = -1;
 #endif
-
   for(;;){
     // Enable interrupts on this processor.
     sti();
@@ -370,6 +377,14 @@ scheduler(void)
     acquire(&ptable.lock);
     for(p = ptable.proc; p < &ptable.proc[NPROC]; p++){
 #ifdef RR2
+/* I run on all the processes and check a few cases: 
+	1. if they are of high priority and runnable then run them
+	2. if they are of high priority but not runnable then continue over them
+	3. if they are of low priority  but I havent passed through all of the proccesses then continue
+	4. if I passed through all of the processes and no high priority was runnable I go over all the low priorities
+	   and check if any of them is runnable, the first that is, I will choose him.
+	   if none are runnable I will go back to step 1.
+	   if i get one that is runnable and low priority i will choose him then go back to step 1 */
       if((p->state != RUNNABLE) && (p->priority == 0)) {
 	loop++;
         continue;
@@ -379,14 +394,86 @@ scheduler(void)
 	loop++;
 	continue;
 	}
-      else if((p->priority != 0) && (loop == 64))
+      else if(loop == 64)
 	{
+	lowPriorityRunnable = p;
+	while(!((lowPriorityRunnable->priority !=0) && (lowPriorityRunnable->state == RUNNABLE))) {
+	lowPriorityRunnable++;
+	loop++;
+	if(loop == 128)
+	continue;
+	}
 	loop=0;
 	}
+
+      loop = 0;
+#elif FAIR2Q
+/* I run on all the processes and check a few cases: 
+	1. if they are runnable and of high priority and I havent passed all of the processes,
+	   I check if its ratio is smaller than the current smallest ratio of high priority
+	   if it is then I save it as the new current smallest ratio, else I continue.
+	2. if they are runnable and of low priority and I havent passed all of the processes,
+	   I check if its ratio is smaller than the current smallest ratio of low priority
+	   if it is then I save it as the new current smallest ratio, else I continue.
+	3. if I passed all of the processes I choose the process with the smallest ratio of high priority,
+	   if there isnt one that was runnable, I choose the process with the smallest ratio of low priority,
+	   if there isnt one I go back to step 1. */	
+/*TODO: if a process was runnable and I chose it to be of smallest ratio, is it possible that when I choose it 
+	to run it wont be runnable anymore? */
+      if((p->state == RUNNABLE) && (p->priority == 0) && (loop<64)) {
+	mechane = clockticks() - p->ctime;
+	if(mechane == 0)
+	mechane = 0.01;
+
+	ratio = p->rtime / mechane;
+
+	if((smallHighRatio == -1) || (ratio < smallHighRatio)) {
+	smallHighRatio = ratio;
+	min_high_pri = p;
+	}
+
+	loop++;
+        continue;
+	}
+      else if((p->state == RUNNABLE) && (p->priority != 0) && (loop<64))
+	{
+	mechane = clockticks() - p->ctime;
+	if(mechane == 0)
+	mechane = 0.01;
+
+	ratio = p->rtime / mechane;
+
+	if((smallLowRatio == -1) || (ratio < smallLowRatio)) {
+	smallLowRatio = ratio;
+	min_low_pri = p;
+	}
+
+	loop++;
+        continue;
+	}
+      else if(loop == 64)
+	{
+	if(smallHighRatio != -1)
+	p = min_high_pri;
+	else if((smallHighRatio == -1) && (smallLowRatio != -1))
+	p = min_low_pri;
+	else {
+	loop = 0;
+	continue;
+	}
+	}
+      else {
+	loop++;
+	continue;
+	}
+	
+     loop = 0;
 #else
       if(p->state != RUNNABLE) 
         continue;
-#endif /* RR2 */
+#endif /* scheduling policies */
+
+
       // Switch to chosen process.  It is the process's job
       // to release ptable.lock and then reacquire it
       // before jumping back to us.
