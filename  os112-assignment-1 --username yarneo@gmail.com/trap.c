@@ -108,7 +108,7 @@ trap(struct trapframe *tf)
     clockticks=0;
     yield();
     }
-#elif RR2
+#elif (RR2 || FAIR2Q)
     if((clockticks == QUANTA) && (proc->priority == 0)) {
     clockticks=0;
     yield();
