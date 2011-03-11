@@ -531,7 +531,13 @@ kill(int pid)
 int
 nice()
 {
+  int bef = proc->priority;
+  if(bef == 0)
+  bef = 1;
+  else 
+  bef = 0;
   acquire(&ptable.lock);
   proc->priority = !(proc->priority);
-  release(&ptable.lock);	
+  release(&ptable.lock);
+  return (proc->priority == bef);  
 }
