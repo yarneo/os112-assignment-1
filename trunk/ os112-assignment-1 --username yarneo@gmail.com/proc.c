@@ -316,8 +316,8 @@ wait2(int* wtime, int* rtime)
         // Found one.
 	*wtime = ((p-> etime) - (p-> ctime)) - (p->rtime);
 	*rtime = (p->rtime); 
-	cprintf("\nwtime: %d\n",*wtime);
-	cprintf("rtime: %d\n",*rtime);
+	//cprintf("\nwtime: %d\n",*wtime);
+	//cprintf("rtime: %d\n",*rtime);
 	p->rtime = 0;
 	p->ctime = 0;
 	p->etime = 0;
@@ -361,6 +361,8 @@ scheduler(void)
 #ifdef RR2
   int loop = 0;
   proc* lowPriorityRunnable;
+  proc* lastHighPri;
+  proc* lastLowPri = -1;
 #elif FAIR2Q
   proc* min_low_pri;
   proc* min_high_pri;
@@ -384,7 +386,10 @@ scheduler(void)
 	4. if I passed through all of the processes and no high priority was runnable I go over all the low priorities
 	   and check if any of them is runnable, the first that is, I will choose him.
 	   if none are runnable I will go back to step 1.
-	   if i get one that is runnable and low priority i will choose him then go back to step 1 */
+	   if i get one that is runnable and low priority i will choose him then go back to step 1 
+
+	I must keep a mechanism that saves the last low priority I was at and the last High priority I was at
+	so then I can return to that index when needed */
       if((p->state != RUNNABLE) && (p->priority == 0)) {
 	loop++;
         continue;
@@ -396,17 +401,28 @@ scheduler(void)
 	}
       else if(loop == 64)
 	{
+	lastHighPri = p;
+	if(lastLowPri == -1) {
 	lowPriorityRunnable = p;
+	}
+	else {
+	lowPriorityRunnable = lastLowPri;
+	}
 	while(!((lowPriorityRunnable->priority !=0) && (lowPriorityRunnable->state == RUNNABLE))) {
 	lowPriorityRunnable++;
 	loop++;
 	if(loop == 128)
-	continue;
+	break;
 	}
-	loop=0;
+	if(loop < 128)
+	p = lowPriorityRunnable;
+	lastLowPri = lowPriorityRunnable;
+	loop = 0;
 	}
-
-      loop = 0;
+	else {
+	loop = 0;
+	lastHighPri = p;
+	}
 #elif FAIR2Q
 /* I run on all the processes and check a few cases: 
 	1. if they are runnable and of high priority and I havent passed all of the processes,
@@ -418,8 +434,6 @@ scheduler(void)
 	3. if I passed all of the processes I choose the process with the smallest ratio of high priority,
 	   if there isnt one that was runnable, I choose the process with the smallest ratio of low priority,
 	   if there isnt one I go back to step 1. */	
-/*TODO: if a process was runnable and I chose it to be of smallest ratio, is it possible that when I choose it 
-	to run it wont be runnable anymore? */
       if((p->state == RUNNABLE) && (p->priority == 0) && (loop<64)) {
 	mechane = clockticks() - p->ctime;
 	if(mechane == 0)
@@ -467,7 +481,7 @@ scheduler(void)
 	continue;
 	}
 	
-     loop = 0;
+
 #else
       if(p->state != RUNNABLE) 
         continue;
@@ -487,6 +501,10 @@ scheduler(void)
       // Process is done running for now.
       // It should have changed its p->state before coming back.
       proc = 0;
+
+#ifdef RR2
+      p=lastHighPri;
+#endif
     }
     release(&ptable.lock);
 
@@ -624,7 +642,7 @@ nice()
   else 
   bef = 0;
   acquire(&ptable.lock);
-  proc->priority = !(proc->priority);
+  proc->priority = (1 - (proc->priority));
   release(&ptable.lock);
   return (proc->priority == bef);  
 }

@@ -27,17 +27,21 @@ sys_wait(void)
 int
 sys_wait2(void)
 { 
+  int ans;
   int wt = 0;
   int rt = 0;
-  return wait2(&wt, &rt);
-
+  if(argint(0, &wt) < 0)
+    return -1;
+  if(argint(1, &rt) < 0)
+    return -1;
+  ans = wait2((int*)wt, (int*)rt);
+  return ans;
 }
 
 int
 sys_nice(void)
 { 
   return nice();
-
 }
 
 int
