@@ -132,6 +132,8 @@ _forktest: forktest.o $(ULIB)
 	$(LD) $(LDFLAGS) -N -e main -Ttext 0 -o _forktest forktest.o ulib.o usys.o
 	$(OBJDUMP) -S _forktest > forktest.asm
 
+
+
 mkfs: mkfs.c fs.h
 	gcc -m32 -Werror -Wall -o mkfs mkfs.c
 
@@ -149,6 +151,7 @@ UPROGS=\
 	_sh\
 	_wc\
 	_zombie\
+	_sanity\
 
 fs.img: mkfs README .env $(UPROGS)
 	./mkfs fs.img README .env $(UPROGS)

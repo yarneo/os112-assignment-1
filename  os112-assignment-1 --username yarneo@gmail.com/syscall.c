@@ -124,7 +124,7 @@ static int (*syscalls[])(void) = {
 [SYS_wait2]   sys_wait2,
 [SYS_write]   sys_write,
 [SYS_uptime]  sys_uptime,
-[SYS_nice]	  sys_nice,
+[SYS_nice]    sys_nice,
 };
 
 void
