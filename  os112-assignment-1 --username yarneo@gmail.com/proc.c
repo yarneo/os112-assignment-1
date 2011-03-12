@@ -358,16 +358,18 @@ void
 scheduler(void)
 {
   struct proc *p;
+//int k=0;
 #ifdef RR2
   int loop = 0;
-  proc* lowPriorityRunnable;
-  proc* lastHighPri;
-  proc* lastLowPri = -1;
+  struct proc* lowPriorityRunnable;
+  struct proc* lastHighPri;
+  struct proc* lastLowPri = 0;
 #elif FAIR2Q
-  proc* min_low_pri;
-  proc* min_high_pri;
-  int mechane;
-  int ratio;
+  int loop = 0;
+  struct proc* min_low_pri = 0;
+  struct proc* min_high_pri = 0;
+  double mechane;
+  double ratio;
   int smallHighRatio = -1;
   int smallLowRatio = -1;
 #endif
@@ -379,6 +381,10 @@ scheduler(void)
     acquire(&ptable.lock);
     for(p = ptable.proc; p < &ptable.proc[NPROC]; p++){
 #ifdef RR2
+//if(k==0) {
+//cprintf("RRRRRRRRRRRRRR222222222222222222222222222222");
+//k++;
+//}
 /* I run on all the processes and check a few cases: 
 	1. if they are of high priority and runnable then run them
 	2. if they are of high priority but not runnable then continue over them
@@ -402,7 +408,7 @@ scheduler(void)
       else if(loop == 64)
 	{
 	lastHighPri = p;
-	if(lastLowPri == -1) {
+	if(lastLowPri == 0) {
 	lowPriorityRunnable = p;
 	}
 	else {
@@ -424,6 +430,10 @@ scheduler(void)
 	lastHighPri = p;
 	}
 #elif FAIR2Q
+//if(k==0) {
+//cprintf("FAIRRRRRRRRRRR2QQQQQQQQQQQQQQQ");
+//k++;
+//}
 /* I run on all the processes and check a few cases: 
 	1. if they are runnable and of high priority and I havent passed all of the processes,
 	   I check if its ratio is smaller than the current smallest ratio of high priority
@@ -435,6 +445,7 @@ scheduler(void)
 	   if there isnt one that was runnable, I choose the process with the smallest ratio of low priority,
 	   if there isnt one I go back to step 1. */	
       if((p->state == RUNNABLE) && (p->priority == 0) && (loop<64)) {
+        //cprintf("If1\n");
 	mechane = clockticks() - p->ctime;
 	if(mechane == 0)
 	mechane = 0.01;
@@ -451,6 +462,7 @@ scheduler(void)
 	}
       else if((p->state == RUNNABLE) && (p->priority != 0) && (loop<64))
 	{
+        //cprintf("If2\n");
 	mechane = clockticks() - p->ctime;
 	if(mechane == 0)
 	mechane = 0.01;
@@ -467,22 +479,35 @@ scheduler(void)
 	}
       else if(loop == 64)
 	{
-	if(smallHighRatio != -1)
+        //cprintf("If3\n");
+	if(smallHighRatio != -1) {
+        //cprintf("If5\n");
 	p = min_high_pri;
-	else if((smallHighRatio == -1) && (smallLowRatio != -1))
+	smallHighRatio = -1;
+	}
+	else if((smallHighRatio == -1) && (smallLowRatio != -1)) {
+        //cprintf("If6\n");
 	p = min_low_pri;
+	smallLowRatio = -1;
+	}
 	else {
 	loop = 0;
+        //cprintf("If7\n");
 	continue;
 	}
 	}
       else {
+        //cprintf("If4\n");
 	loop++;
 	continue;
 	}
 	
 
 #else
+//if(k==0) {
+//cprintf("RRRRRRRRRRRRRRRRRRRRRRRRRRR");
+//k++;
+//}
       if(p->state != RUNNABLE) 
         continue;
 #endif /* scheduling policies */

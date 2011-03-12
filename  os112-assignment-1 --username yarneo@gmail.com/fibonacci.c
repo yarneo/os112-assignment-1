@@ -23,7 +23,8 @@ while((*point) != '\0') {
 point++;
 }
 (*point) = c;
-(*(point++)) = '\0'; 
+point++;
+(*point) = '\0'; 
 }
 
 int
@@ -50,19 +51,19 @@ fibonacci(int numOfPs)
     if(pid == 0) { //children
       if((n%2) == 0) {
 	  char* strfile1 = "FibTest";
-	  char strfile2[10];
+	  char strfile2[11];
 	  int cpid = getpid();
 	  int read_off;
 	  itoa(cpid,strfile2);
 	  strcat(strfile1,strfile2);
 	  int fd = open(strfile1,(O_RDWR | O_CREATE));
-	  char* num1 = '\0';
-	  char* num2 = '\0';
+	  char num1[11];
+	  char num2[11];
 	  char readbuf;
 	  int nnum1;
 	  int nnum2;
 	  int nnum3;
-	  char num3[10];
+	  char num3[11];
 	  int readbuffer=0;
 	  if(fd < 0) {
 	  	printf(1,"problem opening file",fd);
@@ -71,12 +72,12 @@ fibonacci(int numOfPs)
 	  else {
 	  	if(n==0) {
 	  		write(fd,"0",1);
-	  		printf(1,"FibTest%d %d,none",cpid,0);
+	  		printf(1,"FibTest%d %d,none\n",cpid,0);
 	  	}
 	  	else {
 	  		read_off = 0;
-	  		write(fd,"0,1,",4);
-	  		printf(1,"FibTest%d %d,%d",cpid,1,0);
+	  		write(fd,"2,3,",4);
+	  		printf(1,"FibTest%d %d,%d\n",cpid,1,0);
 	  		int aggr = 1;
 	  		while(aggr < n) {
 	  			fd = fileOffset(fd,strfile1,read_off);//fd->off = read_off;
@@ -104,14 +105,22 @@ fibonacci(int numOfPs)
 	  			}//end outer for
 	  			nnum1 = atoi(num1);
 	  			nnum2 = atoi(num2);
+				//printf(1,"\n%d TEST %d TEST\n",cpid,nnum1);
+				//printf(1,"\n%d TEST %d TEST\n",cpid,nnum2);
 	  			nnum3 = nnum1 + nnum2;
-	  			printf(1,"FibTest%d %d,%d",cpid,nnum2,nnum1);	  
+	  			printf(1,"FibTest%d %d,%d\n",cpid,nnum2,nnum1);	  
 	  			itoa(nnum3,num3);
+				charCat(num3,',');
+				//printf(1,"\n%d TEST %s TEST\n",cpid,num3);
 	  			write(fd,num3,strlen(num3));
 	  			aggr++;
-	  		}
+				memset(num1,0,11);
+				memset(num2,0,11);
+				memset(num3,0,11);
+				readbuffer = read_off;	  		
+			}
 	  	}
-	  	printf(1,"%d cid finished its calculation",cpid);
+	  	printf(1,"%d cid finished its calculation\n",cpid);
 		close(fd);
 	  }
 	
@@ -128,7 +137,7 @@ fibonacci(int numOfPs)
 			aggr++;
 	  	}
 	  }
-	  printf(1,"%d cid finished its calculation",cpid);  
+	  printf(1,"%d cid finished its calculation\n",cpid);  
      }//end odd processes
      exit();
    }//end children
@@ -162,9 +171,19 @@ if(pid > 0) {
 int
 main(int argc, char *argv[])
 {
+  if(argc == 2) {
   char* pStr = argv[1];
   int numPs = atoi(pStr);
+  if(numPs > 0)
   fibonacci(numPs);
-
+  else {
+  printf(1,"insert valid argument\n");
+  exit();
+  }
+  }
+  else {
+  printf(1,"insert argument\n");
+  }
+exit();
 return 0;
 }
