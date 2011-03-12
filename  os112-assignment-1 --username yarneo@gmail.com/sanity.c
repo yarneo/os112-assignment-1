@@ -31,7 +31,7 @@ sanity(void)
       if((n%2) == 0) {
 	nice();
 	}
-	for(i = 0; i < 20; i++) {
+	for(i = 0; i < 500; i++) {
 	printf(1,"%d\n",n);
 	}
       exit();
