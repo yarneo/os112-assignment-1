@@ -1,6 +1,7 @@
 #include "types.h"
 #include "stat.h"
 #include "user.h"
+#include "fcntl.h"
 
 struct pinfo
 {
@@ -14,12 +15,33 @@ struct pinfo
 
 struct pinfo forkarr[30];
 
+
+void
+charCat(char* str, char c) {
+char* point = str;
+while((*point) != '\0') {
+point++;
+}
+(*point) = c;
+(*(point++)) = '\0'; 
+}
+
+int
+fileOffset(int fd,char* filename,int buffer)
+{
+char temp[buffer];
+close(fd);
+int fd2 = open(filename,O_RDWR);
+read(fd2,temp,buffer);
+return fd2;
+}
+
+
 void
 fibonacci(int numOfPs)
 {
-  int n, pid, i, temp;
-  int wtime=0; 
-  int rtime=0;
+  int n, pid, temp;
+
 
   printf(1,"fibonacci test\n");
 
@@ -28,69 +50,105 @@ fibonacci(int numOfPs)
     if(pid == 0) { //children
       if((n%2) == 0) {
 	  char* strfile1 = "FibTest";
-	  char* strfile2;
+	  char strfile2[10];
 	  int cpid = getpid();
+	  int read_off;
 	  itoa(cpid,strfile2);
-	  strcar(strfile1,strfile2);
+	  strcat(strfile1,strfile2);
 	  int fd = open(strfile1,(O_RDWR | O_CREATE));
+	  char* num1 = '\0';
+	  char* num2 = '\0';
+	  char readbuf;
+	  int nnum1;
+	  int nnum2;
+	  int nnum3;
+	  char num3[10];
+	  int readbuffer=0;
 	  if(fd < 0) {
-	  printf(1,"problem opening file",fd);
-	  exit();
-      }
+	  	printf(1,"problem opening file",fd);
+	  	exit();
+          }
 	  else {
-	  if(n==0) {
-	  write(fd,"0",1);
-	  printf(1,"FibTest%d %d,none",cpid,0);
+	  	if(n==0) {
+	  		write(fd,"0",1);
+	  		printf(1,"FibTest%d %d,none",cpid,0);
+	  	}
+	  	else {
+	  		read_off = 0;
+	  		write(fd,"0,1,",4);
+	  		printf(1,"FibTest%d %d,%d",cpid,1,0);
+	  		int aggr = 1;
+	  		while(aggr < n) {
+	  			fd = fileOffset(fd,strfile1,read_off);//fd->off = read_off;
+	  			for(;;) {
+	  				read(fd,&readbuf,1);
+					readbuffer++;
+	  				if(readbuf != ',') {
+	  					charCat(num1,readbuf); //add char to string
+	  				}
+	  				else {
+	  					read_off = readbuffer;
+	  					for(;;) {
+	  						read(fd,&readbuf,1);
+							readbuffer++;
+	  						if(readbuf != ',') {
+	  							charCat(num2,readbuf); //add char to string
+	  						}	
+	  						else {
+	  							break;
+
+	  						}
+	  					}//end inner for
+	  					break;
+	  				}
+	  			}//end outer for
+	  			nnum1 = atoi(num1);
+	  			nnum2 = atoi(num2);
+	  			nnum3 = nnum1 + nnum2;
+	  			printf(1,"FibTest%d %d,%d",cpid,nnum2,nnum1);	  
+	  			itoa(nnum3,num3);
+	  			write(fd,num3,strlen(num3));
+	  			aggr++;
+	  		}
+	  	}
+	  	printf(1,"%d cid finished its calculation",cpid);
+		close(fd);
 	  }
-	  else {
-	  write(fd,"0,1,",4);
-	  printf(1,"FibTest%d %d,%d",cpid,1,0);
+	
+	
+     }//end even processes
+     else {
+	  int cpid = getpid();
+	  int num1 = 0;
+	  int num2 = 1;
 	  int aggr = 1;
-	  while(aggr < n) {
-	  fd->off -= 4;
-	  read(
-	  
-	  
-	  aggr++;
+	  if(n!=1) {
+	  	while(aggr < n) {
+			num1 = num2 + num1;
+			aggr++;
+	  	}
 	  }
-	  }
-	  }
-	
-	
-	  }
-	  else {
-	  
-	  
-	  
-	  }
-	for(i = 0; i < 500; i++) {
-	printf(1,"%d\n",i);
-	}
-      exit();
-   }
+	  printf(1,"%d cid finished its calculation",cpid);  
+     }//end odd processes
+     exit();
+   }//end children
    else if(pid > 0) {//parent
 	continue;
-    }
+   }
    else //fork error
 	printf(1,"fork error");
       exit();
-  }
+   }
 
 
 if(pid > 0) {
-    for(n=0; n<N; n++) {
-	temp = wait2(&wtime,&rtime);
+    for(n=0; n<numOfPs; n++) {
+	temp = wait();
 	if(temp == -1) { //error 
-	printf(1,"wait2 error");
+	printf(1,"wait error");
 	exit();
 	}
         else {
-  	//printf(1,"wtime: %d",wtime);
-  	//printf(1,"rtime: %d",rtime);
-	forkarr[n].cid = temp;
-	forkarr[n].wait_time = wtime;
-	forkarr[n].run_time = rtime;
-	forkarr[n].ta_time = wtime+rtime;
 
 	}
     }
@@ -107,6 +165,6 @@ main(int argc, char *argv[])
   char* pStr = argv[1];
   int numPs = atoi(pStr);
   fibonacci(numPs);
-  }
 
+return 0;
 }
