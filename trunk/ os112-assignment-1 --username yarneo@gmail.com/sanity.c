@@ -31,7 +31,7 @@ sanity(void)
       if((n%2) == 0) {
 	nice();
 	}
-	for(i = 0; i < 500; i++) {
+	for(i = 0; i < 20; i++) {
 	printf(1,"%d\n",n);
 	}
       exit();
@@ -80,16 +80,17 @@ main(void)
   ave_rtime += forkarr[j].run_time;
   ave_tatime += forkarr[j].ta_time;
 
-  printf(1,"\nwtime: %d\n",forkarr[j].wait_time);
-  printf(1,"rtime: %d\n",forkarr[j].run_time);
-  printf(1,"tatime: %d",forkarr[j].ta_time);
+  printf(1,"\npid: %d",forkarr[j].cid);
+  printf(1,"    wtime: %d",forkarr[j].wait_time);
+  printf(1,"    rtime: %d",forkarr[j].run_time);
+  printf(1,"    tatime: %d",forkarr[j].ta_time);
 
   }
   ave_wtime /= 30;
   ave_rtime /= 30;
   ave_tatime /= 30;
-  printf(1,"\n\nAVE wtime: %d\n",(int)ave_wtime);
-  printf(1,"AVE rtime: %d\n",(int)ave_rtime);
-  printf(1,"AVE tatime: %d",(int)ave_tatime);
+  printf(1,"\n\nAVE wtime: %d",(int)ave_wtime);
+  printf(1,"    AVE rtime: %d",(int)ave_rtime);
+  printf(1,"    AVE tatime: %d",(int)ave_tatime);
   exit();
 }
