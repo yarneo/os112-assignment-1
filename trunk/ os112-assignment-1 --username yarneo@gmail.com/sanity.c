@@ -32,7 +32,7 @@ sanity(void)
 	nice();
 	}
 	for(i = 0; i < 500; i++) {
-	printf(1,"%d\n",i);
+	printf(1,"%d\n",n);
 	}
       exit();
    }

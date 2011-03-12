@@ -70,7 +70,7 @@ fibonacci(int numOfPs)
 	  	exit();
           }
 	  else {
-	  	if(n==0) {
+	  	if(numOfPs==0) {
 	  		write(fd,"0",1);
 	  		printf(1,"FibTest%d %d,none\n",cpid,0);
 	  	}
@@ -79,7 +79,7 @@ fibonacci(int numOfPs)
 	  		write(fd,"2,3,",4);
 	  		printf(1,"FibTest%d %d,%d\n",cpid,1,0);
 	  		int aggr = 1;
-	  		while(aggr < n) {
+	  		while(aggr < numOfPs) {
 	  			fd = fileOffset(fd,strfile1,read_off);//fd->off = read_off;
 	  			for(;;) {
 	  				read(fd,&readbuf,1);
@@ -131,8 +131,8 @@ fibonacci(int numOfPs)
 	  int num1 = 0;
 	  int num2 = 1;
 	  int aggr = 1;
-	  if(n!=1) {
-	  	while(aggr < n) {
+	  if(numOfPs != 1) {
+	  	while(aggr < numOfPs) {
 			num1 = num2 + num1;
 			aggr++;
 	  	}
