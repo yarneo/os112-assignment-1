@@ -359,7 +359,7 @@ scheduler(void)
 {
   struct proc *p;
 //int k=0;
-#ifdef RR2
+#ifdef RR2Q
   int loop = 0;
   struct proc* lowPriorityRunnable;
   struct proc* lastHighPri;
@@ -370,8 +370,8 @@ scheduler(void)
   struct proc* min_high_pri = 0;
   double mechane;
   double ratio;
-  int smallHighRatio = -1;
-  int smallLowRatio = -1;
+  double smallHighRatio = 2;
+  double smallLowRatio = 2;
 #endif
   for(;;){
     // Enable interrupts on this processor.
@@ -380,7 +380,7 @@ scheduler(void)
     // Loop over process table looking for process to run.
     acquire(&ptable.lock);
     for(p = ptable.proc; p < &ptable.proc[NPROC]; p++){
-#ifdef RR2
+#ifdef RR2Q
 //if(k==0) {
 //cprintf("RRRRRRRRRRRRRR222222222222222222222222222222");
 //k++;
@@ -448,11 +448,11 @@ scheduler(void)
         //cprintf("If1\n");
 	mechane = clockticks() - p->ctime;
 	if(mechane == 0)
-	mechane = 0.01;
-
+	ratio = 1;
+	else 
 	ratio = p->rtime / mechane;
-
-	if((smallHighRatio == -1) || (ratio < smallHighRatio)) {
+	
+	if(ratio < smallHighRatio) {
 	smallHighRatio = ratio;
 	min_high_pri = p;
 	}
@@ -465,11 +465,11 @@ scheduler(void)
         //cprintf("If2\n");
 	mechane = clockticks() - p->ctime;
 	if(mechane == 0)
-	mechane = 0.01;
-
+	ratio = 1;
+	else
 	ratio = p->rtime / mechane;
 
-	if((smallLowRatio == -1) || (ratio < smallLowRatio)) {
+	if(ratio < smallLowRatio) {
 	smallLowRatio = ratio;
 	min_low_pri = p;
 	}
@@ -480,15 +480,19 @@ scheduler(void)
       else if(loop == 64)
 	{
         //cprintf("If3\n");
-	if(smallHighRatio != -1) {
+	if(smallHighRatio != 2) {
         //cprintf("If5\n");
 	p = min_high_pri;
-	smallHighRatio = -1;
+	smallHighRatio = 2;
+	smallLowRatio = 2;
+	loop = 0;
 	}
-	else if((smallHighRatio == -1) && (smallLowRatio != -1)) {
+	else if((smallHighRatio == 2) && (smallLowRatio != 2)) {
         //cprintf("If6\n");
 	p = min_low_pri;
-	smallLowRatio = -1;
+	smallHighRatio = 2;
+	smallLowRatio = 2;
+	loop = 0;
 	}
 	else {
 	loop = 0;
@@ -527,7 +531,7 @@ scheduler(void)
       // It should have changed its p->state before coming back.
       proc = 0;
 
-#ifdef RR2
+#ifdef RR2Q
       p=lastHighPri;
 #endif
     }
