@@ -38,3 +38,6 @@ void* memset(void*, int, uint);
 void* malloc(uint);
 void free(void*);
 int atoi(const char*);
+void reverse(char*);
+void itoa(int, char*);
+char* strcat(char*, const char*);

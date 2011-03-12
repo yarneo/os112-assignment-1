@@ -152,6 +152,7 @@ UPROGS=\
 	_wc\
 	_zombie\
 	_sanity\
+	_fibonacci\
 
 fs.img: mkfs README .env $(UPROGS)
 	./mkfs fs.img README .env $(UPROGS)
@@ -189,7 +190,7 @@ QEMUGDB = $(shell if $(QEMU) -help | grep -q '^-gdb'; \
 ifndef CPUS
 CPUS := 1
 endif
-QEMUOPTS = -curses -hdb fs.img xv6.img -smp $(CPUS)
+QEMUOPTS = -hdb fs.img xv6.img -smp $(CPUS)
 
 qemu: fs.img xv6.img
 	$(QEMU) -serial mon:stdio $(QEMUOPTS)
