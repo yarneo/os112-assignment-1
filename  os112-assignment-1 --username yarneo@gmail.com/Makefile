@@ -67,7 +67,7 @@ QEMU = $(shell if which qemu > /dev/null; \
 endif
 
 ifndef SCHEDFLAG
-SCHEDFLAG = DEFSCHED
+SCHEDFLAG = RR
 endif
 
 

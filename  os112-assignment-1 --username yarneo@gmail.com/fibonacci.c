@@ -46,7 +46,7 @@ fibonacci(int numOfPs)
 
   printf(1,"fibonacci test\n");
 
-  for(n=0; n<numOfPs; n++) {
+  for(n=0; n<30; n++) {
     pid = fork();
     if(pid == 0) { //children
       if((n%2) == 0) {
@@ -151,7 +151,7 @@ fibonacci(int numOfPs)
 
 
 if(pid > 0) {
-    for(n=0; n<numOfPs; n++) {
+    for(n=0; n<30; n++) {
 	temp = wait();
 	if(temp == -1) { //error 
 	printf(1,"wait error");
